@@ -1,0 +1,24 @@
+inicializacion del proyecto:
+nest new ns-prueba
+cd ns-prueba
+code .
+
+
+
+
+instalacion de dependencias:
+npm install @nestjs/config
+npm install @nestjs/typeorm typeorm pg
+npm install class-validator
+npm install @nestjs/mapped-types
+npm install class-transformer class-validator
+
+
+para docker:
+npm install dotenv
+
+docker-compose up -d
+
+npm run start:dev
+
+

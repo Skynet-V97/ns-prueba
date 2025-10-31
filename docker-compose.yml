@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16.2
+    container_name: ns_prueba_db  # Asegúrate de usar un nombre único
+    restart: always
+    environment:
+      POSTGRES_DB: ns_prueba      # El nombre de la base de datos
+      POSTGRES_USER: postgres     # El usuario de la base de datos
+      POSTGRES_PASSWORD: postgres # La contraseña del usuario
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5433:5432"  # Mapeamos el puerto local 5433 al puerto interno 5432 del contenedor
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ns_prueba_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ns_prueba"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ns_prueba_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"  # Interfaz web de pgAdmin en http://localhost:5050
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - ns_prueba_network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  ns_prueba_network:
+    driver: bridge
