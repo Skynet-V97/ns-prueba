@@ -76,4 +76,6 @@ export class FormField {
 
   @OneToMany(() => CollectionData, (cd) => cd.field)
   collectionData: CollectionData[];
+  uiConfig: any;
+  optionsConfig: any;
 }

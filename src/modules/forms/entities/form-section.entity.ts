@@ -1,13 +1,10 @@
-import {
-  Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
 import { FormVersion } from './form-version.entity';
 import { FormField } from './form-field.entity';
+import { Form } from './form.entity';
 
 @Entity('form_sections')
 export class FormSection {
-  //@PrimaryGeneratedColumn()
-  
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -17,24 +14,38 @@ export class FormSection {
   @Column()
   title: string;
 
-  @Column({ type: 'int', default: 0 })
-  orderIndex: number;
+  //@Column({ type: 'int', default: 0 })
+  //orderIndex: number;
+  @Column({ type: 'int', nullable: true })
+  orderIndex: number | null; // Hacerlo opcional
 
-  @Column({ type: 'int', default: 1 })
-  columns: number;
+
+  @Column({ type: 'int', nullable: true , default: 1 })
+  columns: number | null;
 
   @Column({ default: true })
   isVisible: boolean;
 
+  // Relación recursiva con subsecciones (parentSection <-> subSections)
   @ManyToOne(() => FormSection, (section) => section.subSections, { nullable: true })
   parentSection: FormSection;
 
   @OneToMany(() => FormSection, (section) => section.parentSection)
   subSections: FormSection[];
 
+  // Relación con FormVersion (un FormSection pertenece a una única versión de formulario)
   @ManyToOne(() => FormVersion, (version) => version.sections)
   formVersion: FormVersion;
 
+  // Relación con los campos del formulario
   @OneToMany(() => FormField, (field) => field.section)
   fields: FormField[];
+
+  // Relación con Form (un FormSection pertenece a un único Form)
+  @ManyToOne(() => Form, (form) => form.sections, { nullable: false })
+  form: Form;
+
+  // Descripción de la sección, ahora con tipo string en lugar de any
+  @Column({ type: 'text', nullable: true })
+  description: string;
 }

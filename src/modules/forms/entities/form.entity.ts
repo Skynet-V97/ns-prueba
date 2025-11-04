@@ -1,10 +1,16 @@
 import {
-  Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne,
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToOne,
+  CreateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 import { FormVersion } from './form-version.entity';
 import { BusinessRule } from './business-rule.entity';
 import { FormData } from './form-data.entity';
+import { FormSection } from './form-section.entity';
 
 @Entity('forms')
 export class Form {
@@ -23,18 +29,35 @@ export class Form {
   @Column({ nullable: true })
   tipo: string;
 
-  @ManyToOne(() => User, (user) => user.forms)
+  // Relación con la entidad User (quien creó el formulario)
+  @ManyToOne(() => User, (user) => user.forms, { nullable: true })
   createdBy: User;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  // Fecha de creación
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
+  // Relación uno a muchos con FormVersion
   @OneToMany(() => FormVersion, (version) => version.form)
   versions: FormVersion[];
 
+  // Relación uno a muchos con BusinessRule
   @OneToMany(() => BusinessRule, (rule) => rule.form)
   businessRules: BusinessRule[];
 
+  // Relación uno a muchos con FormData
   @OneToMany(() => FormData, (data) => data.form)
   formData: FormData[];
+
+  // Relación uno a muchos con FormSection
+  @OneToMany(() => FormSection, (section) => section.form, { eager: true })
+  sections: FormSection[];
+
+  // Agrega una propiedad para manejar los "settings" si es necesario
+  @Column({ type: 'json', nullable: true })
+  settings: Record<string, any>;
+
+  // Metadatos o reglas adicionales (si es necesario)
+  @Column({ type: 'json', nullable: true })
+  metadata: Record<string, any>;
 }
