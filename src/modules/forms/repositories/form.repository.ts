@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Form } from '../entities/form.entity';
 import { CreateFormDto, UpdateFormDto } from '../dtos';
+import { FormSectionDto, FormFieldDto } from '../dtos/create-form.dto';
 import { FormSection } from '../entities/form-section.entity';
 import { FormField } from '../entities/form-field.entity';
 import { FormVersion } from '../entities/form-version.entity';
@@ -25,6 +26,28 @@ export class FormRepository {
   ) {}
 
   // Función para mapear CreateFormDto a una entidad Form
+  /*private async mapCreateFormDtoToEntity(dto: CreateFormDto): Promise<Form> {
+    const form = this.formRepo.create({
+      code: dto.code,
+      name: dto.name,
+      description: dto.description,
+      tipo: dto.tipo,
+      createdBy: dto.createdBy,
+      settings: dto.settings,
+      metadata: dto.metadata,
+    });
+
+    // Mapear las secciones y asociarlas al formulario
+    if (Array.isArray(dto.sections)) {
+      const formSections = await this.mapSectionsDtoToEntities(dto.sections, form); // Aquí pasamos el objeto `form` completo
+      form.sections = formSections;
+    } else {
+      //form.sections = [];
+      form.sections = dto.sections;
+    }
+
+    return form;
+  }*/
   private async mapCreateFormDtoToEntity(dto: CreateFormDto): Promise<Form> {
     const form = this.formRepo.create({
       code: dto.code,
@@ -38,15 +61,18 @@ export class FormRepository {
 
     // Mapear las secciones y asociarlas al formulario
     if (Array.isArray(dto.sections)) {
-      //const formSections = await this.mapSectionsDtoToEntities(dto.sections, form); // Aquí pasamos el objeto `form` completo
-      //form.sections = formSections;
+      form.sections = await this.mapSectionsDtoToEntities(dto.sections, form);
     } else {
-      //form.sections = [];
-      form.sections = dto.sections;
+      form.sections = [];
     }
+
+    await this.formRepo.save(form);
 
     return form;
   }
+
+  
+
 
 
 
@@ -55,7 +81,7 @@ export class FormRepository {
 
 
   // Función para mapear FormSectionDto[] a FormSection[]
-  private async mapSectionsDtoToEntities(sectionsDto: FormSection[], form: Form): Promise<FormSection[]> {
+  /*private async mapSectionsDtoToEntities(sectionsDto: FormSection[], form: Form): Promise<FormSection[]> {
     return Promise.all(
       sectionsDto.map(async (sectionDto) => {
         // Primero, mapeamos los campos de la sección
@@ -79,7 +105,161 @@ export class FormRepository {
         return section;
       })
     );
+  }*/
+  // Función auxiliar para mapear un FormSectionDto a FormSection
+  // Asegúrate de importar FormSectionDto
+
+
+  /*private async mapSectionsDtoToEntities(
+    sectionsDto: FormSectionDto[],
+    form: Form
+  ): Promise<FormSection[]> {
+    return Promise.all(
+      sectionsDto.map(async (sectionDto) => {
+        // Mapear los campos de la sección
+        const fields: FormField[] = await this.mapFieldsDtoToEntities(sectionDto.fields);
+
+        // Mapear parentSection si existe
+        let parentSection: FormSection | null = null;
+        if (sectionDto.parentSection && sectionDto.parentSection.id) {
+          parentSection = await this.formSectionRepo.findOne({
+            where: { id: sectionDto.parentSection.id },
+          });
+        }
+
+        let formVersion: FormVersion | null = null;
+        if (sectionDto.formVersion) {
+          formVersion = await this.formVersionRepo.findOne({
+            where: { id: sectionDto.formVersion },
+          });
+        }
+
+
+        // Crear la entidad FormSection
+        const section = this.formSectionRepo.create(<Partial<FormSection>>{
+          code: sectionDto.code,
+          title: sectionDto.title,
+          description: sectionDto.description ?? null,
+          orderIndex: sectionDto.orderIndex ?? 0,
+          columns: sectionDto.columns ?? 1,
+          isVisible: sectionDto.isVisible ?? true,
+          form: form,
+          parentSection: parentSection ?? null,
+          subSections: sectionDto.subSections
+            ? await this.mapSectionsDtoToEntities(sectionDto.subSections, form)
+            : [],
+          formVersion: sectionDto.formVersion 
+            ? await this.mapFormVersionDto(sectionDto.formVersion) 
+            : undefined,
+
+          fields: fields,
+        });
+
+        // Asignar formVersion usando el setter que acepta string
+        if (sectionDto.formVersion) {
+          section.formVersion? formVersion: null; // El setter de la entidad convierte string a FormVersion
+        }
+
+        return section;
+      })
+    );
+  }*/
+  private async mapSectionsDtoToEntities(
+    sectionsDto: FormSectionDto[],
+    form: Form
+  ): Promise<FormSection[]> {
+    return Promise.all(
+      sectionsDto.map(async (sectionDto) => {
+        // Mapear parentSection si existe
+        let parentSection: FormSection | null = null;
+        if (sectionDto.parentSection && sectionDto.parentSection.id) {
+          parentSection = await this.formSectionRepo.findOne({
+            where: { id: sectionDto.parentSection.id },
+          });
+        }
+
+        // Mapear formVersion si existe
+        let formVersion: FormVersion | null = null;
+        if (sectionDto.formVersion) {
+          formVersion = await this.formVersionRepo.findOne({
+            where: { id: sectionDto.formVersion },
+          });
+        }
+
+        // Crear la entidad FormSection
+        const section = this.formSectionRepo.create({
+          code: sectionDto.code,
+          title: sectionDto.title,
+          description: sectionDto.description ?? null,
+          orderIndex: sectionDto.orderIndex ?? 0,
+          columns: sectionDto.columns ?? 1,
+          isVisible: sectionDto.isVisible ?? true,
+          form: form,
+          parentSection: parentSection ?? null,
+          subSections: sectionDto.subSections
+            ? await this.mapSectionsDtoToEntities(sectionDto.subSections, form)
+            : [],
+          formVersion: formVersion ?? undefined,
+        } as Partial<FormSection>);
+
+        
+        //section.form = form;
+        //section.id = form.id;
+        await this.formSectionRepo.insert(section);
+
+        // Mapear los campos asociando la sección
+        section.fields = await this.mapFieldsDtoToEntities(sectionDto.fields ?? [], section);
+
+        return section;
+      })
+    );
   }
+
+
+
+
+// Función auxiliar para mapear campos
+  /*private async mapFieldsDtoToEntities(fieldsDto: FormFieldDto[]): Promise<FormField[]> {
+    return fieldsDto.map((fieldDto) =>
+      this.formFieldRepo.create( {
+        code: fieldDto.code,
+        label: fieldDto.label,
+        placeholder: fieldDto.placeholder ?? null,
+        fieldType: fieldDto.fieldType ?? null,
+        dataType: fieldDto.dataType ?? null,
+        orderIndex: fieldDto.orderIndex ?? 0,
+        isRequired: fieldDto.isRequired ?? false,
+        validationRules: fieldDto.validationRules ?? {},
+        uiConfig: fieldDto.uiConfig ?? {},
+        optionsConfig: fieldDto.optionsConfig ?? {},
+      } as Partial<FormField>)
+    );
+  }*/
+ private async mapFieldsDtoToEntities(
+    fieldsDto: FormFieldDto[],
+    section: FormSection
+  ): Promise<FormField[]> {
+    return fieldsDto.map((fieldDto) =>
+      this.formFieldRepo.create({
+        code: fieldDto.code,
+        label: fieldDto.label,
+        placeholder: fieldDto.placeholder ?? null,
+        fieldType: fieldDto.fieldType ?? null,
+        dataType: fieldDto.dataType ?? null,
+        orderIndex: fieldDto.orderIndex ?? 0,
+        isRequired: fieldDto.isRequired ?? false,
+        validationRules: fieldDto.validationRules ?? {},
+        uiConfig: fieldDto.uiConfig ?? {},
+        optionsConfig: fieldDto.optionsConfig ?? {},
+        section: section, //  Asociar sección padre
+      } as Partial<FormField>)
+    );
+  }
+
+  
+
+
+
 
 
 
@@ -88,7 +268,7 @@ export class FormRepository {
 
 
   // Función para mapear los campos de FormFieldDto[] a FormField[]
-  private async mapFieldsDtoToEntities(fieldsDto: FormField[]): Promise<FormField[]> {
+  /*private async mapFieldsDtoToEntities(fieldsDto: FormField[]): Promise<FormField[]> {
     return fieldsDto.map((fieldDto) =>
       this.formFieldRepo.create({
         code: fieldDto.code,
@@ -103,7 +283,7 @@ export class FormRepository {
         optionsConfig: fieldDto.optionsConfig,
       })
     );
-  }
+  }*/
 
   // Función para mapear ParentSectionDto si es necesario
   private async mapParentSectionDto(parentSectionDto: FormSection): Promise<FormSection | null> {
@@ -112,10 +292,11 @@ export class FormRepository {
   }
 
   // Función para mapear FormVersionDto si es necesario
-  private async mapFormVersionDto(formVersionDto: FormVersion): Promise<FormVersion | null> {
-    if (!formVersionDto) return null;
-    return this.formVersionRepo.findOne({ where: { id: formVersionDto.id } }); // Encuentra la versión por su ID
+  private async mapFormVersionDto(formVersionId: string): Promise<FormVersion | undefined> {
+    if (!formVersionId) return undefined;
+    return await this.formVersionRepo.findOne({ where: { id: formVersionId } }) || undefined;
   }
+
 
 
 

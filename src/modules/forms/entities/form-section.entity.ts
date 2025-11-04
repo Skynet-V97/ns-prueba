@@ -30,22 +30,27 @@ export class FormSection {
   @ManyToOne(() => FormSection, (section) => section.subSections, { nullable: true })
   parentSection: FormSection;
 
-  @OneToMany(() => FormSection, (section) => section.parentSection)
+  @OneToMany(() => FormSection, (section) => section.parentSection, { cascade: true, lazy: true })
   subSections: FormSection[];
 
   // Relación con FormVersion (un FormSection pertenece a una única versión de formulario)
-  @ManyToOne(() => FormVersion, (version) => version.sections)
-  formVersion: FormVersion;
+  //@ManyToOne(() => FormVersion, (version) => version.sections)
+  //formVersion: FormVersion;
+  @ManyToOne(() => FormVersion, (version) => version.sections, { nullable: true })
+  formVersion?: FormVersion;
+  //@Column({ type: 'uuid', nullable: true })
+  //formVersion: string;
 
   // Relación con los campos del formulario
-  @OneToMany(() => FormField, (field) => field.section)
+  @OneToMany(() => FormField, (field) => field.section, { cascade: true, eager: true })
   fields: FormField[];
 
   // Relación con Form (un FormSection pertenece a un único Form)
-  @ManyToOne(() => Form, (form) => form.sections, { nullable: false })
+  @ManyToOne(() => Form, (form) => form.sections, { nullable: true })
   form: Form;
 
   // Descripción de la sección, ahora con tipo string en lugar de any
   @Column({ type: 'text', nullable: true })
   description: string;
 }
+

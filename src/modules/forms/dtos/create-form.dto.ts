@@ -29,7 +29,7 @@ class FieldOptionDto {
   @IsOptional() @IsObject() metadata?: Record<string, any>;
 }
 
-class FormFieldDto {
+export class FormFieldDto {
   @IsString() id: string;
   @IsString() code: string;
   @IsString() label: string;
@@ -48,7 +48,7 @@ class FormFieldDto {
   };
 }
 
-class FormSectionDto {
+/*class FormSectionDto {
   @IsString() id: string;
   @IsString() code: string;
   @IsString() title: string;
@@ -56,11 +56,33 @@ class FormSectionDto {
   //@IsOptional() @IsNumber() orderIndex?: number;
   @IsNumber() orderIndex: number;
   @IsOptional() @IsBoolean() isVisible?: boolean;
-
   @IsOptional() @IsNumber() columns?: number;
   @IsOptional() parentSection?: FormSectionDto;
   @IsOptional() @IsArray() subSections?: FormSectionDto[];
   @IsOptional() formVersion?: string; // ID de la versión del formulario
+
+  @IsOptional() @IsString() form?: string; // Agregar form aquí como ID
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FormFieldDto)
+  fields: FormFieldDto[];
+}*/
+export class FormSectionDto {
+  @IsString() id: string;
+  @IsString() code: string;
+  @IsString() title: string;
+  @IsOptional() @IsString() description?: string;
+  //@IsOptional() @IsNumber() orderIndex?: number;
+  @IsNumber() orderIndex: number;
+  //@IsOptional() @IsBoolean() isVisible?: boolean;
+  @IsBoolean() isVisible: boolean;
+  //@IsOptional() @IsNumber() columns?: number;
+  @IsNumber() columns: number;
+  //@IsOptional() parentSection?: FormSectionDto;
+  parentSection: FormSectionDto;
+  @IsArray() subSections: FormSectionDto[];
+  @IsString() formVersion: string; // ID de la versión del formulario
 
   @IsOptional() @IsString() form?: string; // Agregar form aquí como ID
 
