@@ -4,8 +4,6 @@ cd ns-prueba
 code .
 
 
-
-
 instalacion de dependencias:
 npm install @nestjs/config
 npm install @nestjs/typeorm typeorm pg
@@ -17,11 +15,211 @@ npm install class-transformer class-validator
 para docker:
 npm install dotenv
 
-docker-compose up -d
 
+PARA LEVANTAR EL PROYECTO:
+docker-compose up -d
 npm run start:dev
 
 
 para ver en arbol los archivos:
+tree "" /f
 
-tree "C:\Users\ASUS\Desktop\microservicios\ns-prueba\src" /f
+
+URL: FUNCIONALES
+GET Y POST: http://localhost:3000/forms
+GET POR ID: http://localhost:3000/forms/id
+
+
+JSON DE PRUEBA PARA HACER POST EN 
+
+{
+  "id": "a1b2c3d4-e5f6-7g8h-9i0j-klmnopqrst12",
+  "code": "product_registration",
+  "name": "Registro de HANSACRM 19",
+  "description": "Formulario para registrar DBA DE HANSA",
+  "version": 1,
+  "settings": {
+    "audited": true,
+    "allowDraft": true,
+    "autoSave": true,
+    "submitLabel": "Registrar Producto",
+    "cancelLabel": "Cancelar",
+    "autoSaveInterval": 300000
+  },
+  "sections": [
+    {
+      "id": "s1-product-info",
+      "code": "product_info",
+      "title": "Información del Producto",
+      "description": "Detalles del producto a registrar",
+      "orderIndex": 1,
+      "isVisible": true,
+      "fields": [
+        {
+          "id": "field-product-001",
+          "code": "product_name",
+          "label": "Nombre del Producto",
+          "placeholder": "Ingrese el nombre del producto",
+          "fieldType": "text",
+          "dataType": "string",
+          "orderIndex": 1,
+          "isRequired": true,
+          "validationRules": {
+            "required": true,
+            "minLength": 3,
+            "maxLength": 100,
+            "errorMessage": "El nombre del producto es obligatorio (3-100 caracteres)"
+          },
+          "uiConfig": {
+            "icon": "shopping_basket"
+          }
+        },
+        {
+          "id": "field-product-002",
+          "code": "sku",
+          "label": "SKU",
+          "placeholder": "123456789",
+          "fieldType": "text",
+          "dataType": "string",
+          "orderIndex": 2,
+          "isRequired": true,
+          "validationRules": {
+            "required": true,
+            "pattern": "^[0-9A-Za-z-]+$",
+            "errorMessage": "El SKU debe ser alfanumérico"
+          },
+          "uiConfig": {
+            "icon": "barcode"
+          }
+        },
+        {
+          "id": "field-product-003",
+          "code": "product_category",
+          "label": "Categoría del Producto",
+          "placeholder": "Seleccione una categoría",
+          "fieldType": "select",
+          "dataType": "string",
+          "orderIndex": 3,
+          "isRequired": true,
+          "validationRules": {
+            "required": true,
+            "errorMessage": "Seleccione una categoría de producto"
+          },
+          "uiConfig": {
+            "icon": "category",
+            "options": [
+              { "value": "electronics", "label": "Electrónica" },
+              { "value": "furniture", "label": "Muebles" },
+              { "value": "clothing", "label": "Ropa" },
+              { "value": "food", "label": "Alimentos" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s2-price-stock",
+      "code": "price_and_stock",
+      "title": "Precio y Stock",
+      "description": "Información relacionada con el precio y la cantidad de stock del producto",
+      "orderIndex": 2,
+      "isVisible": true,
+      "fields": [
+        {
+          "id": "field-price-001",
+          "code": "product_price",
+          "label": "Precio del Producto",
+          "placeholder": "Ingrese el precio",
+          "fieldType": "number",
+          "dataType": "float",
+          "orderIndex": 1,
+          "isRequired": true,
+          "validationRules": {
+            "required": true,
+            "min": 0.01,
+            "errorMessage": "El precio debe ser mayor a 0"
+          },
+          "uiConfig": {
+            "icon": "attach_money"
+          }
+        },
+        {
+          "id": "field-stock-001",
+          "code": "product_stock",
+          "label": "Stock Disponible",
+          "placeholder": "Ingrese la cantidad disponible",
+          "fieldType": "number",
+          "dataType": "integer",
+          "orderIndex": 2,
+          "isRequired": true,
+          "validationRules": {
+            "required": true,
+            "min": 0,
+            "errorMessage": "La cantidad en stock no puede ser menor que 0"
+          },
+          "uiConfig": {
+            "icon": "store"
+          }
+        }
+      ]
+    },
+    {
+      "id": "s3-product-images",
+      "code": "product_images",
+      "title": "Imágenes del Producto",
+      "description": "Subir imágenes relacionadas con el producto",
+      "orderIndex": 3,
+      "isVisible": true,
+      "fields": [
+        {
+          "id": "field-images-001",
+          "code": "product_images",
+          "label": "Imágenes del Producto",
+          "fieldType": "file",
+          "dataType": "array",
+          "orderIndex": 1,
+          "isRequired": false,
+          "validationRules": {
+            "maxFiles": 5,
+            "maxSize": 5000000,
+            "errorMessage": "Puedes cargar hasta 5 imágenes de máximo 5MB cada una"
+          },
+          "uiConfig": {
+            "icon": "photo_camera"
+          }
+        }
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "rule-price-validation",
+      "name": "Validar precio de producto",
+      "ruleType": "validation",
+      "triggerEvent": "onChange",
+      "triggerFields": ["product_price"],
+      "action": {
+        "targetField": "product_price",
+        "action": "validatePriceRange"
+      },
+      "priority": 1
+    },
+    {
+      "id": "rule-stock-validation",
+      "name": "Validar stock disponible",
+      "ruleType": "validation",
+      "triggerEvent": "onChange",
+      "triggerFields": ["product_stock"],
+      "action": {
+        "targetField": "product_stock",
+        "action": "validateStockAvailability"
+      },
+      "priority": 2
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-11-05T09:15:00Z",
+    "updatedAt": "2025-11-05T09:15:00Z",
+    "minimumAppVersion": "1.0.0"
+  }
+}
