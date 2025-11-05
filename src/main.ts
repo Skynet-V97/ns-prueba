@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
+import { HttpExceptionFilter } from './common/filters/http.exception.filter';
 
 dotenv.config();
 
@@ -9,6 +10,10 @@ console.log('Database password:', process.env.DB_PASS);  // Esto debería mostra
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
+  //aplicacion del filtro de excepcion
+  app.useGlobalFilters(new HttpExceptionFilter())
+
   await app.listen(process.env.PORT ?? 3000);
 }
 

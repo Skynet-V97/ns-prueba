@@ -21,14 +21,16 @@ export class FormVersionRepository {
 
   async findAll(): Promise<FormVersion[]> {
     return await this.repo.find({
-      relations: ['form', 'createdByUser'], // ajusta las relaciones según tu entidad
+      //relations: ['form', 'createdByUser'], // ajusta las relaciones según tu entidad
+      relations: ['createdByUser'],
     });
   }
 
   async findById(id: string): Promise<FormVersion | null> {
     return await this.repo.findOne({
       where: { id },
-      relations: ['form', 'createdByUser'],
+      //relations: ['form', 'createdByUser'],
+      relations: ['createdByUser'],
     });
   }
 

@@ -36,13 +36,13 @@ export class FormSection {
   // Relación con FormVersion (un FormSection pertenece a una única versión de formulario)
   //@ManyToOne(() => FormVersion, (version) => version.sections)
   //formVersion: FormVersion;
-  @ManyToOne(() => FormVersion, (version) => version.sections, { nullable: true })
+  @ManyToOne(() => FormVersion, (version) => version.sections, { cascade: true, lazy: true })
   formVersion?: FormVersion;
   //@Column({ type: 'uuid', nullable: true })
   //formVersion: string;
 
   // Relación con los campos del formulario
-  @OneToMany(() => FormField, (field) => field.section, { cascade: true, eager: true })
+  @OneToMany(() => FormField, (field) => field.section, { cascade: true, lazy: true })
   fields: FormField[];
 
   // Relación con Form (un FormSection pertenece a un único Form)

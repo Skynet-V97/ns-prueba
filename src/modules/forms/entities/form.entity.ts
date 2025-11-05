@@ -11,6 +11,7 @@ import { FormVersion } from './form-version.entity';
 import { BusinessRule } from './business-rule.entity';
 import { FormData } from './form-data.entity';
 import { FormSection } from './form-section.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('forms')
 export class Form {
@@ -38,7 +39,9 @@ export class Form {
   createdAt: Date;
 
   // Relación uno a muchos con FormVersion
+  //@OneToMany(() => FormVersion, (formVersion) => formVersion.form)
   @OneToMany(() => FormVersion, (version) => version.form)
+  @Exclude({ toPlainOnly: true }) // Excluir solo cuando se serializa a JSON
   versions: FormVersion[];
 
   // Relación uno a muchos con BusinessRule
