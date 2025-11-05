@@ -35,8 +35,8 @@ JSON DE PRUEBA PARA HACER POST EN
 {
   "id": "a1b2c3d4-e5f6-7g8h-9i0j-klmnopqrst12",
   "code": "product_registration",
-  "name": "Registro de HANSACRM 19",
-  "description": "Formulario para registrar DBA DE HANSA",
+  "name": "Registro de ABDUZCAN 19",
+  "description": "Formulario para registrar DBA DE ABDUZCAN",
   "version": 1,
   "settings": {
     "audited": true,
