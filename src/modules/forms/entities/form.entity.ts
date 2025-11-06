@@ -53,7 +53,7 @@ export class Form {
   formData: FormData[];
 
   // Relación uno a muchos con FormSection
-  @OneToMany(() => FormSection, (section) => section.form, { eager: true })
+  @OneToMany(() => FormSection, (section) => section.form, { eager: true, cascade: true, onDelete: 'CASCADE' })
   sections: FormSection[];
 
   // Agrega una propiedad para manejar los "settings" si es necesario

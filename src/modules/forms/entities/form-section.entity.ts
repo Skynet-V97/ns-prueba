@@ -46,7 +46,7 @@ export class FormSection {
   fields: FormField[];
 
   // Relación con Form (un FormSection pertenece a un único Form)
-  @ManyToOne(() => Form, (form) => form.sections, { nullable: true })
+  @ManyToOne(() => Form, (form) => form.sections, { nullable: true, onDelete: 'CASCADE' })
   form: Form;
 
   // Descripción de la sección, ahora con tipo string en lugar de any

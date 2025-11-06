@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import { Form } from '../entities/form.entity';
 import { CreateFormDto, UpdateFormDto } from '../dtos';
 import { FormSectionDto, FormFieldDto } from '../dtos/create-form.dto';
@@ -189,11 +189,29 @@ export class FormRepository {
 
 
   // Función para obtener todos los formularios con relaciones
-  async findAll(): Promise<Form[]> {
+  /*async findAll(): Promise<Form[]> {
     return await this.formRepo.find({
       relations: ['sections', 'sections.fields', 'businessRules', 'versions'],
     });
+  }*/
+  async findAll(page: number = 1, limit: number = 10): Promise<{ data: Form[]; total: number; page: number; lastPage: number }> {
+    const [data, total] = await this.formRepo.findAndCount({
+      relations: ['sections', 'sections.fields', 'businessRules', 'versions'],
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { createdAt: 'DESC' }, 
+      
+    });
+
+    return {
+      data,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit),
+    };
   }
+
+
 
   // Función para obtener un formulario por ID con relaciones
   /*async findById(id: string): Promise<Form | null> {
@@ -278,7 +296,7 @@ export class FormRepository {
 
 
   // Función para actualizar un formulario a partir de UpdateFormDto
-  async updateForm(id: string, dto: UpdateFormDto): Promise<Form | null> {
+  /*async updateForm(id: string, dto: UpdateFormDto): Promise<Form | null> {
     const form = await this.findById(id);
     if (!form) {
       throw new Error('Form not found');
@@ -289,10 +307,40 @@ export class FormRepository {
     await this.formRepo.update({ id }, updatedForm);
 
     return this.findById(id); // Retorna el formulario actualizado
+  }*/
+ // Función para actualizar un formulario a partir de UpdateFormDto
+  // Función para actualizar un formulario a partir de UpdateFormDto
+  async updateForm(id: string, dto: UpdateFormDto): Promise<Form | null> {
+    try {
+      const form = await this.findById(id);
+      if (!form) {
+        throw new NotFoundException(`Formulario con ID ${id} no encontrado`);
+      }
+
+      const partialForm = dto as unknown as DeepPartial<Form>;
+      this.formRepo.merge(form, partialForm);
+      await this.formRepo.save(form);
+
+      return this.findById(id);
+    } catch (error) {
+      console.error('Error en updateForm:', error);
+      throw new InternalServerErrorException(error.message);
+    }
   }
+
+
+
+
 
   // Función para eliminar un formulario por ID
   async removeForm(id: string): Promise<void> {
-    await this.formRepo.delete({ id });
+    const form = await this.formRepo.findOne({ where: { id } });
+
+    if (!form) {
+      throw new Error(`Formulario con ID ${id} no encontrado`);
+    }
+
+    await this.formRepo.remove(form);
   }
+
 }

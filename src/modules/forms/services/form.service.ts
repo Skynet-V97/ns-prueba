@@ -7,9 +7,13 @@ import { FormRepository } from '../repositories/form.repository';
 export class FormService {
   constructor(private readonly formRepository: FormRepository) {}
 
-  async findAll() {
+  /*async findAll(pageNum: number, limitNum: number) {
     return this.formRepository.findAll();
+  }*/
+  async findAll(page: number, limit: number) {
+    return this.formRepository.findAll(page, limit);
   }
+
 
   async findById(id: string) {
     const form = await this.formRepository.findById(id);
@@ -26,7 +30,7 @@ export class FormService {
     return await this.formRepository.updateForm(id, dto);
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<void> {
     return await this.formRepository.removeForm(id);
   }
 }

@@ -68,7 +68,7 @@ export class FormVersion {
   isCurrent: boolean;
 
   // Relación con Form (solo esta propiedad)
-  @ManyToOne(() => Form, (form) => form.versions, { nullable: false })
+  @ManyToOne(() => Form, (form) => form.versions, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'formId' }) // Asocia la columna 'formId' con la relación Form
   @Exclude({ toPlainOnly: true }) // Excluir solo cuando se serializa a JSON
   form: Form;
