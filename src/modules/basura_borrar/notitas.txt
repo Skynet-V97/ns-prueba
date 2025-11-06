@@ -28,15 +28,28 @@ tree "" /f
 URL: FUNCIONALES
 GET Y POST: http://localhost:3000/forms
 GET POR ID: http://localhost:3000/forms/id
+DELETE POR ID: http://localhost:3000/forms/id
+(UPDATE) PATCH POR ID: http://localhost:3000/forms/id
+tomar en cuenta que solo hace actualizaciones basicas mas no entre relaciones:
+{
+  "name": "Registro de prueba 14V3",
+  "description": "Formulario para registrar DBA DE prueba, update 3",
+  "settings": {
+    "autoSave": true
+  }
+}
 
 
-JSON DE PRUEBA PARA HACER POST EN 
+
+
+
+JSON DE PRUEBA PARA HACER POST
 
 {
   "id": "a1b2c3d4-e5f6-7g8h-9i0j-klmnopqrst12",
   "code": "product_registration",
-  "name": "Registro de ABDUZCAN 19",
-  "description": "Formulario para registrar DBA DE ABDUZCAN",
+  "name": "Registro de PRUEBA 23",
+  "description": "Formulario para registrar DBA DE PRUEBA",
   "version": 1,
   "settings": {
     "audited": true,

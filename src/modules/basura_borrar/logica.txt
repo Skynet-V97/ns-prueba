@@ -1,0 +1,37 @@
+DE USUARIO:
+1. USER crea FORMULARIO
+2. USER crea FORM_VERSION (puede crear varias versiones de formularios)
+3. USER completa FORM_DATA (puede llenar varios formularios)
+4. USER genera SYNC_QUEUE
+
+DE FORMULARIO:
+1. El FORMULARIO tiene FORM_SECTIONS
+2. El FORMULARIO contiene BUSINESS_RULES
+3. El FORMULARIO genera FORM_DATA
+4. eL FORMULARIO versiona FOMR_VERSION (porque tendra varias versiones)
+
+DE LOS DATOS DE FORMULARIO (FORM_DATA):
+1. FORM_DATA sincroniza SYNC_QUEUE  
+2. FORM_DATA contiene FORM_ATTACHMENTS (los datos del formulario pueden contener archivos)
+3. FORM_DATA contiene COLLECTION_DATA (seria el analisis de datos de interes)
+
+DE LOS DATOS DE COLECCION:
+1. COLLECTION_DATA incluye FORM_ATTACHMENTS
+
+DE LAS SECCIONES DE FORMULARIOS:
+1. FORM_SECTIONS contiene FORM_FIELD (contiene campos del formulario)
+2. eL FORM_SECTIONS PUEDE TENER 'sub_sections'
+
+DE LOS CAMPOS DEL FORMULARIO:
+1. FORM_FIELD tiene FIELD_OPTIONS (opciones de campos)
+2. FORM_FIELD usa VALIDATION_RULES (reglas de validacion)
+3. FORM_FIELD define COLLECTION_TEMPLATES (plantillas de coleccion)
+4. FORM_FIELD tiende de fuente (source) FIELD_DEPENDENCIES (dependencias de campos)
+5. FORM_FIELD estructura COLLECTION_DATA
+6. FORM_FIELD almacena FORM_ATTACHMENTS
+7. El FORM_FIELD puede tener 'sub_fields'
+
+NOTAS IMPORTANTES:
+1. Una SYNC_QUEUE (cola sincronizada) es una estructura de datos que gestiona operaciones de sincronización entre diferentes procesos o hilos
+2. Un "Form Attachment" o adjunto de formulario es la acción de asociar o incluir uno o más archivos (documentos, imágenes, videos) a un formulario digital
+3. Data collection (o recopilación/recolección de datos) es el proceso sistemático de obtener y medir información relevante sobre variables de interés, utilizando métodos específicos, para analizarla, responder preguntas de investigación, probar hipótesis y tomar decisiones informadas
