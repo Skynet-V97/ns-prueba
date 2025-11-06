@@ -89,9 +89,6 @@ export class FormRepository {
           formVersion: formVersion ?? undefined,
         } as Partial<FormSection>);
 
-        
-        //section.form = form;
-        //section.id = form.id;
         await this.formSectionRepo.insert(section);
 
         // Mapear los campos asociando la sección
@@ -102,27 +99,6 @@ export class FormRepository {
     );
   }
 
-  // Función auxiliar para mapear campos
- /*private async mapFieldsDtoToEntities(
-    fieldsDto: FormFieldDto[],
-    section: FormSection
-  ): Promise<FormField[]> {
-    return fieldsDto.map((fieldDto) =>
-      this.formFieldRepo.create({
-        code: fieldDto.code,
-        label: fieldDto.label,
-        placeholder: fieldDto.placeholder ?? null,
-        fieldType: fieldDto.fieldType ?? null,
-        dataType: fieldDto.dataType ?? null,
-        orderIndex: fieldDto.orderIndex ?? 0,
-        isRequired: fieldDto.isRequired ?? false,
-        validationRules: fieldDto.validationRules ?? {},
-        uiConfig: fieldDto.uiConfig ?? {},
-        optionsConfig: fieldDto.optionsConfig ?? {},
-        section: section, //  Asociar sección padre
-      } as Partial<FormField>)
-    );
-  }*/
   // Función auxiliar para mapear campos
   private async mapFieldsDtoToEntities(
     fieldsDto: FormFieldDto[],
@@ -144,14 +120,13 @@ export class FormRepository {
         section: section, // Aquí asociamos la sección al campo
       } as Partial<FormField>);
 
-      // **Lo importante**: guardamos cada campo en la base de datos
+      //guardamos cada campo en la base de datos
       await this.formFieldRepo.save(field);  // Cambié este punto
 
       return field;
     }));
   }
 
-  // Función para crear una nueva versión del formulario
   // Función para crear una nueva versión del formulario
   private async createFormVersion(form: Form): Promise<FormVersion> {
     const formVersion = new FormVersion();
@@ -166,34 +141,11 @@ export class FormRepository {
 
     // Guardamos la versión en la base de datos
     await this.formVersionRepo.save(formVersion);
-
     return formVersion;
   }
 
 
-
-
-  // Función para mapear ParentSectionDto si es necesario
-  private async mapParentSectionDto(parentSectionDto: FormSection): Promise<FormSection | null> {
-    if (!parentSectionDto) return null;
-    return this.formSectionRepo.findOne({ where: { id: parentSectionDto.id } }); // Encuentra la subsección por su ID
-  }
-
-  // Función para mapear FormVersionDto si es necesario
-  private async mapFormVersionDto(formVersionId: string): Promise<FormVersion | undefined> {
-    if (!formVersionId) return undefined;
-    return await this.formVersionRepo.findOne({ where: { id: formVersionId } }) || undefined;
-  }
-
-
-
-
   // Función para obtener todos los formularios con relaciones
-  /*async findAll(): Promise<Form[]> {
-    return await this.formRepo.find({
-      relations: ['sections', 'sections.fields', 'businessRules', 'versions'],
-    });
-  }*/
   async findAll(page: number = 1, limit: number = 10): Promise<{ data: Form[]; total: number; page: number; lastPage: number }> {
     const [data, total] = await this.formRepo.findAndCount({
       relations: ['sections', 'sections.fields', 'businessRules', 'versions'],
@@ -211,15 +163,6 @@ export class FormRepository {
     };
   }
 
-
-
-  // Función para obtener un formulario por ID con relaciones
-  /*async findById(id: string): Promise<Form | null> {
-    return await this.formRepo.findOne({
-      where: { id },
-      relations: ['sections', 'businessRules', 'versions'],
-    });
-  }*/
  // Función para obtener un formulario por ID con relaciones
   async findById(id: string): Promise<Form | null> {
     return await this.formRepo.findOne({
@@ -228,42 +171,13 @@ export class FormRepository {
     });
   }
 
-
-  // Función para crear un formulario a partir de CreateFormDto
-  /*async createForm(dto: CreateFormDto): Promise<Form> {
-    let code = dto.code;
-    
-    // Verificar si ya existe un formulario con este código
-    let existingForm = await this.formRepo.findOne({
-      where: { code },
-    });
-
-    // Si existe, generar un nuevo código único
-    let counter = 1;
-    while (existingForm) {
-      code = `${dto.code}_${counter}`;
-      existingForm = await this.formRepo.findOne({
-        where: { code },
-      });
-      counter++;
-    }
-
-    // Actualizar el DTO con el nuevo código único
-    dto.code = code;
-
-    const form = await this.mapCreateFormDtoToEntity(dto);
-    return await this.formRepo.save(form);
-  }*/
-  // Función para crear un formulario a partir de CreateFormDto
   // Función para crear un formulario a partir de CreateFormDto
   async createForm(dto: CreateFormDto): Promise<Form> {
     let code = dto.code;
-    
     // Verificar si ya existe un formulario con este código
     let existingForm = await this.formRepo.findOne({
       where: { code },
     });
-
     // Si existe, generar un nuevo código único
     let counter = 1;
     while (existingForm) {
@@ -273,42 +187,19 @@ export class FormRepository {
       });
       counter++;
     }
-
     // Actualizar el DTO con el nuevo código único
     dto.code = code;
-
     // Crear el formulario sin el campo 'createdBy'
     const form = await this.mapCreateFormDtoToEntity(dto);
-
-    // **Crear la versión por defecto** y asociarla al formulario
+    //Crear la versión por defecto y asociarla al formulario
     const formVersion = await this.createFormVersion(form);
-
     // Asocia la versión creada al formulario
-    form.versions = [formVersion];  // Asociamos la versión al formulario
-
-    // Guardamos el formulario con la versión
+    form.versions = [formVersion];  
     await this.formRepo.save(form);
-
     return form;
   }
 
 
-
-
-  // Función para actualizar un formulario a partir de UpdateFormDto
-  /*async updateForm(id: string, dto: UpdateFormDto): Promise<Form | null> {
-    const form = await this.findById(id);
-    if (!form) {
-      throw new Error('Form not found');
-    }
-
-    // Mapea el DTO de actualización a una entidad
-    const updatedForm = await this.mapCreateFormDtoToEntity(dto as CreateFormDto);
-    await this.formRepo.update({ id }, updatedForm);
-
-    return this.findById(id); // Retorna el formulario actualizado
-  }*/
- // Función para actualizar un formulario a partir de UpdateFormDto
   // Función para actualizar un formulario a partir de UpdateFormDto
   async updateForm(id: string, dto: UpdateFormDto): Promise<Form | null> {
     try {
@@ -327,10 +218,6 @@ export class FormRepository {
       throw new InternalServerErrorException(error.message);
     }
   }
-
-
-
-
 
   // Función para eliminar un formulario por ID
   async removeForm(id: string): Promise<void> {

@@ -18,10 +18,6 @@ import { CreateFormDto, UpdateFormDto } from '../dtos';
 export class FormController {
   constructor(private readonly formService: FormService) {}
 
-  /*@Get()
-  async findAll() {
-    return await this.formService.findAll();
-  }*/
   @Get()
   async findAll(
     @Query('page') page: number = 1,

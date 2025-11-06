@@ -8,10 +8,6 @@ import { FormVersion } from '../entities';
 export class FormVersionController {
   constructor(private readonly formVersionService: FormVersionService) {}
 
-  /*@Get()
-  async findAll() {
-    return await this.formVersionService.findAll();
-  }*/
   @Get()
   async findAll() {
     try {
@@ -20,14 +16,8 @@ export class FormVersionController {
     } catch (error) {
       throw new InternalServerErrorException('errorrrrr');
     } 
-    
-    
   }
 
-  /*@Get(':id')
-  async findById(@Param('id') id: string) {
-    return await this.formVersionService.findById(id);
-  }*/
 
   @Get(':id')
   async findById(@Param('id') id: string) {

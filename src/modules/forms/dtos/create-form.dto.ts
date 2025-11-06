@@ -48,26 +48,6 @@ export class FormFieldDto {
   };
 }
 
-/*class FormSectionDto {
-  @IsString() id: string;
-  @IsString() code: string;
-  @IsString() title: string;
-  @IsOptional() @IsString() description?: string;
-  //@IsOptional() @IsNumber() orderIndex?: number;
-  @IsNumber() orderIndex: number;
-  @IsOptional() @IsBoolean() isVisible?: boolean;
-  @IsOptional() @IsNumber() columns?: number;
-  @IsOptional() parentSection?: FormSectionDto;
-  @IsOptional() @IsArray() subSections?: FormSectionDto[];
-  @IsOptional() formVersion?: string; // ID de la versión del formulario
-
-  @IsOptional() @IsString() form?: string; // Agregar form aquí como ID
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => FormFieldDto)
-  fields: FormFieldDto[];
-}*/
 export class FormSectionDto {
   @IsString() id: string;
   @IsString() code: string;
@@ -91,8 +71,6 @@ export class FormSectionDto {
   @Type(() => FormFieldDto)
   fields: FormFieldDto[];
 }
-
-
 
 class BusinessRuleDto {
   @IsString() id: string;
