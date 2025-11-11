@@ -261,8 +261,8 @@ export class FormRepository {
     }
   }
 
-  //Eliinacion con cascada usando solo QueryRunner
-  async removeForm(id: string): Promise<void> {
+  //Eliinacion fisica con cascada usando solo QueryRunner
+  /*async removeForm(id: string): Promise<void> {
     const queryRunner = this.formRepo.manager.connection.createQueryRunner();
     await queryRunner.startTransaction();
 
@@ -306,7 +306,58 @@ export class FormRepository {
     } finally {
       await queryRunner.release();
     }
+  }*/
+
+  // Eliminación lógica con cascada usando solo QueryRunner
+  async removeForm(id: string): Promise<void> {
+    const queryRunner = this.formRepo.manager.connection.createQueryRunner();
+    await queryRunner.startTransaction();
+
+    try {
+      // Inactivar campos
+      await queryRunner.manager
+        .createQueryBuilder()
+        .update(FormField)
+        .set({ isActive: false })
+        .where(`"sectionId" IN (
+          SELECT id FROM form_sections WHERE "formId" = :id
+        )`, { id })
+        .execute();
+
+      // Inactivar secciones
+      await queryRunner.manager
+        .createQueryBuilder()
+        .update(FormSection)
+        .set({ isActive: false })
+        .where(`"formId" = :id`, { id })
+        .execute();
+
+      // Inactivar versiones del formulario
+      await queryRunner.manager
+        .createQueryBuilder()
+        .update(FormVersion)
+        .set({ isActive: false })
+        .where(`"formId" = :id`, { id })
+        .execute();
+
+      // Inactivar formulario principal
+      await queryRunner.manager
+        .createQueryBuilder()
+        .update(Form)
+        .set({ isActive: false })
+        .where(`"id" = :id`, { id })
+        .execute();
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(`Error al desactivar el formulario: ${error.message}`);
+    } finally {
+      await queryRunner.release();
+    }
   }
+
+
 
 
 

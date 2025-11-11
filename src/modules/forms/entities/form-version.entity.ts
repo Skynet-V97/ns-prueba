@@ -51,6 +51,9 @@ export class FormVersion {
   // Snapshot del esquema del formulario en esa versión
   @Column({ type: 'jsonb' })
   schemaSnapshot: any;
+
+  @Column({ default: true })
+  isActive: boolean;
 }
 
 

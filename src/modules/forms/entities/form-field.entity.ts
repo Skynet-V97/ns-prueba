@@ -127,4 +127,7 @@ export class FormField {
    */
   @OneToMany(() => CollectionData, (cd) => cd.field, { cascade: true })
   collectionData: CollectionData[];
+
+  @Column({ default: true })
+  isActive: boolean;
 }

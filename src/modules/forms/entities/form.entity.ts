@@ -63,4 +63,7 @@ export class Form {
   // Metadatos o reglas adicionales (si es necesario)
   @Column({ type: 'json', nullable: true })
   metadata: Record<string, any>;
+
+  @Column({ default: true })
+  isActive: boolean;
 }

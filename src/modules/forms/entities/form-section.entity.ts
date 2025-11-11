@@ -52,5 +52,8 @@ export class FormSection {
   // Descripción de la sección, ahora con tipo string en lugar de any
   @Column({ type: 'text', nullable: true })
   description: string;
+
+  @Column({ default: true })
+  isActive: boolean;
 }
 
