@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-
 // Módulo de formularios
 import { FormsModule } from './modules/forms/forms.module';
+//modulo de salud con Terminus
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { FormsModule } from './modules/forms/forms.module';
 
     // Importa el módulo de formularios donde están los servicios y repositorios
     FormsModule,
+    HealthModule,
   ],
   controllers: [],
   providers: [],
