@@ -42,7 +42,7 @@ export class FormSection {
   //formVersion: string;
 
   // Relación con los campos del formulario
-  @OneToMany(() => FormField, (field) => field.section, { cascade: true, lazy: true, onDelete: 'CASCADE' })
+  @OneToMany(() => FormField, (field) => field.section, { cascade: true, eager: true, onDelete: 'CASCADE' })
   fields: FormField[];
 
   // Relación con Form (un FormSection pertenece a un único Form)
