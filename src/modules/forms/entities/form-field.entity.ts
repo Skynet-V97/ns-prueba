@@ -84,7 +84,7 @@ export class FormField {
   /**
    * Campos anidados o compuestos (como collections)
    */
-  @ManyToOne(() => FormField, (field) => field.subFields, { nullable: true })
+  @ManyToOne(() => FormField, (field) => field.subFields, { nullable: true, onDelete: 'CASCADE' })
   parentField: FormField;
 
   @OneToMany(() => FormField, (field) => field.parentField, {
@@ -101,7 +101,7 @@ export class FormField {
   /**
    * Reglas de validación específicas del campo
    */
-  @OneToMany(() => ValidationRule, (vr) => vr.field, { cascade: true })
+  @OneToMany(() => ValidationRule, (vr) => vr.field, { cascade: true, onDelete: 'CASCADE' })
   validationRules: ValidationRule[];
 
   /**

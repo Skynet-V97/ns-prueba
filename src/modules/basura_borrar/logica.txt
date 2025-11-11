@@ -1,3 +1,5 @@
+###############LOGICA DEL REQUERIMIENTO###############
+
 DE USUARIO:
 1. USER crea FORMULARIO
 2. USER crea FORM_VERSION (puede crear varias versiones de formularios)
@@ -35,3 +37,27 @@ NOTAS IMPORTANTES:
 1. Una SYNC_QUEUE (cola sincronizada) es una estructura de datos que gestiona operaciones de sincronización entre diferentes procesos o hilos
 2. Un "Form Attachment" o adjunto de formulario es la acción de asociar o incluir uno o más archivos (documentos, imágenes, videos) a un formulario digital
 3. Data collection (o recopilación/recolección de datos) es el proceso sistemático de obtener y medir información relevante sobre variables de interés, utilizando métodos específicos, para analizarla, responder preguntas de investigación, probar hipótesis y tomar decisiones informadas
+
+
+###############Cómo permitir actualizaciones de campos anidados###############
+Opciones:
+Reemplazo completo de secciones/campos (PUT)
+Traes el formulario con todas sus secciones y campos.
+Reemplazas los arrays (sections, fields, etc.) completos.
+Esto es más fácil que hacer parches parciales y evita inconsistencias.
+
+PATCH profundo (nested)
+Permitir modificar propiedades de un field específico, por ejemplo label, placeholder, isRequired.
+Implica cargar la entidad con relaciones (findOne({ relations: ['sections', 'sections.fields'] })), modificar en memoria y guardar con save().
+
+Versionado
+Cada vez que se cambie la estructura del formulario (sections o fields), crear una nueva versión (versions) y mantener la anterior para no romper los datos existentes.
+
+
+Recomendación práctica
+Dado tu contexto y que es un módulo de formularios dinámicos para CRM:
+Mantén la estructura dinámica en tu microservicio.
+Permite PUT o PATCH anidado solo para tu microservicio, no directamente sobre el CRM.
+Cuando envíes los datos rellenados al CRM, solo envía los valores, no la estructura del formulario.
+Si en algún momento quieres que cambios de campos afecten la UI del CRM, hazlo a través de una sincronización programada, pero no en tiempo real.
+

@@ -48,7 +48,7 @@ JSON DE PRUEBA PARA HACER POST
 {
   "id": "a1b2c3d4-e5f6-7g8h-9i0j-klmnopqrst12",
   "code": "product_registration",
-  "name": "Registro de PRUEBA 23",
+  "name": "Registro de PRUEBA 6",
   "description": "Formulario para registrar DBA DE PRUEBA",
   "version": 1,
   "settings": {

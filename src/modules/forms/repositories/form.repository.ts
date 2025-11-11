@@ -7,8 +7,8 @@ import { FormSectionDto, FormFieldDto } from '../dtos/create-form.dto';
 import { FormSection } from '../entities/form-section.entity';
 import { FormField } from '../entities/form-field.entity';
 import { FormVersion } from '../entities/form-version.entity';
-import { from } from 'rxjs';
-import { User } from '../entities';
+import { User, ValidationRule } from '../entities';
+import { QueryRunner } from 'typeorm';
 
 @Injectable()
 export class FormRepository {
@@ -23,11 +23,15 @@ export class FormRepository {
     private readonly formFieldRepo: Repository<FormField>,
 
     @InjectRepository(FormVersion)
-    private readonly formVersionRepo: Repository<FormVersion>
+    private readonly formVersionRepo: Repository<FormVersion>, 
+
+    ////////////////////////////////////////////////////////
+    @InjectRepository(ValidationRule)
+    private readonly validationRuleRepo: Repository<ValidationRule>
   ) {}
 
   // Función para mapear CreateFormDto a una entidad Form
-  private async mapCreateFormDtoToEntity(dto: CreateFormDto): Promise<Form> {
+  private async mapCreateFormDtoToEntity(dto: CreateFormDto, queryRunner: QueryRunner): Promise<Form> {
     const form = this.formRepo.create({
       code: dto.code,
       name: dto.name,
@@ -38,14 +42,17 @@ export class FormRepository {
       metadata: dto.metadata,
     });
 
+    await queryRunner.manager.save(form);  // Guardar el formulario dentro de la transacción
+
     // Mapear las secciones y asociarlas al formulario
     if (Array.isArray(dto.sections)) {
-      form.sections = await this.mapSectionsDtoToEntities(dto.sections, form);
+      form.sections = await this.mapSectionsDtoToEntities(dto.sections, form, queryRunner);
     } else {
       form.sections = [];
     }
 
-    await this.formRepo.save(form);
+    //await queryRunner.manager.save(form);  // Guardar el formulario dentro de la transacción
+    await queryRunner.manager.save(form);
 
     return form;
   }
@@ -53,11 +60,11 @@ export class FormRepository {
   // Función para mapear FormSectionDto[] a FormSection[]
   private async mapSectionsDtoToEntities(
     sectionsDto: FormSectionDto[],
-    form: Form
+    form: Form,
+    queryRunner: QueryRunner
   ): Promise<FormSection[]> {
     return Promise.all(
       sectionsDto.map(async (sectionDto) => {
-        // Mapear parentSection si existe
         let parentSection: FormSection | null = null;
         if (sectionDto.parentSection && sectionDto.parentSection.id) {
           parentSection = await this.formSectionRepo.findOne({
@@ -65,7 +72,6 @@ export class FormRepository {
           });
         }
 
-        // Mapear formVersion si existe
         let formVersion: FormVersion | null = null;
         if (sectionDto.formVersion) {
           formVersion = await this.formVersionRepo.findOne({
@@ -84,15 +90,16 @@ export class FormRepository {
           form: form,
           parentSection: parentSection ?? null,
           subSections: sectionDto.subSections
-            ? await this.mapSectionsDtoToEntities(sectionDto.subSections, form)
+            ? await this.mapSectionsDtoToEntities(sectionDto.subSections, form, queryRunner)
             : [],
           formVersion: formVersion ?? undefined,
         } as Partial<FormSection>);
 
-        await this.formSectionRepo.insert(section);
+        // Insertar la sección usando el queryRunner para la transacción
+        await queryRunner.manager.save(section);
 
-        // Mapear los campos asociando la sección
-        section.fields = await this.mapFieldsDtoToEntities(sectionDto.fields ?? [], section);
+        // Mapear los campos asociados a esta sección
+        section.fields = await this.mapFieldsDtoToEntities(sectionDto.fields ?? [], section, queryRunner);
 
         return section;
       })
@@ -102,9 +109,9 @@ export class FormRepository {
   // Función auxiliar para mapear campos
   private async mapFieldsDtoToEntities(
     fieldsDto: FormFieldDto[],
-    section: FormSection
+    section: FormSection,
+    queryRunner: QueryRunner
   ): Promise<FormField[]> {
-    // Aquí es donde mapeas los campos a entidades
     return Promise.all(fieldsDto.map(async (fieldDto) => {
       const field = this.formFieldRepo.create({
         code: fieldDto.code,
@@ -114,45 +121,109 @@ export class FormRepository {
         dataType: fieldDto.dataType ?? null,
         orderIndex: fieldDto.orderIndex ?? 0,
         isRequired: fieldDto.isRequired ?? false,
-        validationRules: fieldDto.validationRules ?? {},
+        //validationRules: fieldDto.validationRules ?? {},
+        validationRules: [], // se llenará abajo
         uiConfig: fieldDto.uiConfig ?? {},
         optionsConfig: fieldDto.optionsConfig ?? {},
-        section: section, // Aquí asociamos la sección al campo
+        section: section,
       } as Partial<FormField>);
 
-      //guardamos cada campo en la base de datos
-      await this.formFieldRepo.save(field);  // Cambié este punto
+      // Guardar el campo dentro de la transacción
+      await queryRunner.manager.save(field);
+
+      // ---Crear las validaciones asociadas ---
+      if (fieldDto.validationRules && typeof fieldDto.validationRules === 'object') {
+        const validationEntries = Object.entries(fieldDto.validationRules);
+
+        const rules: ValidationRule[] = validationEntries
+          .filter(([key]) => key !== 'errorMessage') // omitimos errorMessage para usarlo como parámetro
+          .map(([key, value]) => {
+            const rule = this.validationRuleRepo.create({
+              name: key, // ejemplo: required, pattern, minLength
+              expression: typeof value === 'string' ? value : String(value),
+              parameters: {
+                errorMessage: fieldDto.validationRules?.errorMessage ?? null,
+              },
+              field,
+            });
+            return rule;
+          });
+
+        await queryRunner.manager.save(rules);
+        field.validationRules = rules;
+      }
 
       return field;
     }));
   }
 
-  // Función para crear una nueva versión del formulario
-  private async createFormVersion(form: Form): Promise<FormVersion> {
+  // Función para crear un formulario
+  async createForm(dto: CreateFormDto): Promise<Form> {
+    const queryRunner = this.formRepo.manager.connection.createQueryRunner();
+    await queryRunner.startTransaction();
+
+    try {
+      let code = dto.code;
+      let existingForm = await this.formRepo.findOne({ where: { code } });
+
+      let counter = 1;
+      while (existingForm) {
+        code = `${dto.code}_${counter}`;
+        existingForm = await this.formRepo.findOne({ where: { code } });
+        counter++;
+      }
+      dto.code = code;
+
+      // Crear el formulario (y sus secciones) — ya guarda en la BD dentro del método
+      const form = await this.mapCreateFormDtoToEntity(dto, queryRunner);
+
+      // Asegurarse que el form tiene un ID (persistido)
+      if (!form.id) {
+        await queryRunner.manager.save(form);
+      }
+
+      // Crear la versión, usando el mismo queryRunner
+      const formVersion = await this.createFormVersion(form, queryRunner);
+
+      form.versions = [formVersion];
+
+      // Guardar nuevamente el formulario con la relación a su versión
+      await queryRunner.manager.save(form);
+
+      await queryRunner.commitTransaction();
+      return form;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(error.message);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+
+  // Función para crear una versión de un formulario
+  private async createFormVersion(form: Form, queryRunner: QueryRunner): Promise<FormVersion> {
     const formVersion = new FormVersion();
+    formVersion.versionNumber = 1;
+    formVersion.changelog = "Creación inicial del formulario";
+    formVersion.isCurrent = true;
+    formVersion.form = form;
+    formVersion.createdAt = new Date();
+    formVersion.schemaSnapshot = {};
 
-    // Asignamos los valores a la versión
-    formVersion.versionNumber = 1;  // Primera versión
-    formVersion.changelog = "Creación inicial del formulario";  // Aquí puedes agregar un changelog descriptivo
-    formVersion.isCurrent = true;  // Esta es la versión actual
-    formVersion.form = form;  // Asociamos el formulario
-    formVersion.createdAt = new Date();  // Fecha de creación
-    formVersion.schemaSnapshot = {};  // Snapshot del esquema (ajusta según necesidad)
-
-    // Guardamos la versión en la base de datos
-    await this.formVersionRepo.save(formVersion);
+    await queryRunner.manager.save(formVersion);
     return formVersion;
   }
 
 
-  // Función para obtener todos los formularios con relaciones
-  async findAll(page: number = 1, limit: number = 10): Promise<{ data: Form[]; total: number; page: number; lastPage: number }> {
+
+  // src/modules/forms/repositories/form.repository.ts
+  async findAll(page: number = 1, limit: number = 10) {
     const [data, total] = await this.formRepo.findAndCount({
-      relations: ['sections', 'sections.fields', 'businessRules', 'versions'],
+      relations: ['sections', 'sections.fields', 'businessRules', 'versions', 'sections.fields.validationRules'],
       skip: (page - 1) * limit,
       take: limit,
-      order: { createdAt: 'DESC' }, 
-      
+      order: { createdAt: 'DESC' },
     });
 
     return {
@@ -163,44 +234,15 @@ export class FormRepository {
     };
   }
 
- // Función para obtener un formulario por ID con relaciones
-  async findById(id: string): Promise<Form | null> {
+  // src/modules/forms/repositories/form.repository.ts
+  async findById(id: string) {
     return await this.formRepo.findOne({
       where: { id },
-      relations: ['sections', 'sections.fields', 'businessRules', 'versions'], 
+      relations: ['sections', 'sections.fields', 'businessRules', 'versions', 'sections.fields.validationRules'],
     });
   }
 
-  // Función para crear un formulario a partir de CreateFormDto
-  async createForm(dto: CreateFormDto): Promise<Form> {
-    let code = dto.code;
-    // Verificar si ya existe un formulario con este código
-    let existingForm = await this.formRepo.findOne({
-      where: { code },
-    });
-    // Si existe, generar un nuevo código único
-    let counter = 1;
-    while (existingForm) {
-      code = `${dto.code}_${counter}`;
-      existingForm = await this.formRepo.findOne({
-        where: { code },
-      });
-      counter++;
-    }
-    // Actualizar el DTO con el nuevo código único
-    dto.code = code;
-    // Crear el formulario sin el campo 'createdBy'
-    const form = await this.mapCreateFormDtoToEntity(dto);
-    //Crear la versión por defecto y asociarla al formulario
-    const formVersion = await this.createFormVersion(form);
-    // Asocia la versión creada al formulario
-    form.versions = [formVersion];  
-    await this.formRepo.save(form);
-    return form;
-  }
-
-
-  // Función para actualizar un formulario a partir de UpdateFormDto
+  // src/modules/forms/repositories/form.repository.ts
   async updateForm(id: string, dto: UpdateFormDto): Promise<Form | null> {
     try {
       const form = await this.findById(id);
@@ -219,15 +261,56 @@ export class FormRepository {
     }
   }
 
-  // Función para eliminar un formulario por ID
+  //Eliinacion con cascada usando solo QueryRunner
   async removeForm(id: string): Promise<void> {
-    const form = await this.formRepo.findOne({ where: { id } });
+    const queryRunner = this.formRepo.manager.connection.createQueryRunner();
+    await queryRunner.startTransaction();
 
-    if (!form) {
-      throw new Error(`Formulario con ID ${id} no encontrado`);
+    try {
+      // Borrar reglas de validación directamente por subconsulta
+      await queryRunner.manager
+        .createQueryBuilder()
+        .delete()
+        .from(ValidationRule)
+        .where(`"fieldId" IN (SELECT id FROM form_fields WHERE "sectionId" IN (SELECT id FROM form_sections WHERE "formId" = :id))`, { id })
+        .execute();
+
+      // Borrar campos
+      await queryRunner.manager
+        .createQueryBuilder()
+        .delete()
+        .from(FormField)
+        .where(`"sectionId" IN (SELECT id FROM form_sections WHERE "formId" = :id)`, { id })
+        .execute();
+
+      // Borrar secciones
+      await queryRunner.manager
+        .createQueryBuilder()
+        .delete()
+        .from(FormSection)
+        .where('"formId" = :id', { id })
+        .execute();
+
+      // Borrar formulario
+      await queryRunner.manager
+        .createQueryBuilder()
+        .delete()
+        .from(Form)
+        .where('"id" = :id', { id })
+        .execute();
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(`Error al eliminar el formulario: ${error.message}`);
+    } finally {
+      await queryRunner.release();
     }
-
-    await this.formRepo.remove(form);
   }
+
+
+
+
+
 
 }

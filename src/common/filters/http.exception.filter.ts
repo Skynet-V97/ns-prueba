@@ -1,4 +1,5 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+//NOTA, NO SE ESTA IMPLEMENTANDO EN NINGUNSECTOR, EN CASO DE REQUERIR HACERLO EN MAIN.TS
+/*import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
 
 @Catch()
@@ -25,4 +26,4 @@ export class HttpExceptionFilter implements ExceptionFilter {
       message: message,
     });
   }
-}
+}*/

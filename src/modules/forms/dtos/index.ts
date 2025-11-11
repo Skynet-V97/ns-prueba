@@ -18,3 +18,5 @@ export * from './update-collection-data.dto';
 
 export * from './create-business-rule.dto';
 export * from './update-business-rule.dto';
+
+export * from './form-response.dto';

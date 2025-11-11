@@ -12,7 +12,8 @@ import {
   Patch,
 } from '@nestjs/common';
 import { FormService } from '../services/form.service';
-import { CreateFormDto, UpdateFormDto } from '../dtos';
+import { CreateFormDto, FormResponseDto, UpdateFormDto } from '../dtos';
+import { plainToInstance } from 'class-transformer';
 
 @Controller('forms')
 export class FormController {
@@ -44,8 +45,8 @@ export class FormController {
 
   @Post()
   async create(@Body() dto: CreateFormDto) {
-    // Recibe todo el JSON del formulario
-    return await this.formService.create(dto);
+    const form = await this.formService.create(dto);
+    return plainToInstance(FormResponseDto, form, { excludeExtraneousValues: true });
   }
 
   @Patch(':id')

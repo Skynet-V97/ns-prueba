@@ -1,98 +1,275 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Proyecto NestJS: ns-prueba
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Este proyecto es una prueba de **NestJS** para gestión de formularios, con integración de TypeORM, PostgreSQL y Docker.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Inicialización del proyecto
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+Para crear y abrir el proyecto:
 
 ```bash
-$ npm install
+nest new ns-prueba
+cd ns-prueba
+code .
 ```
 
-## Compile and run the project
+## Instalación de dependencias
+
+Instala las siguientes dependencias necesarias para el proyecto:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install @nestjs/config
+npm install @nestjs/typeorm typeorm pg
+npm install class-validator
+npm install @nestjs/mapped-types
+npm install class-transformer class-validator
 ```
 
-## Run tests
+Para manejar variables de entorno en Docker:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install dotenv
 ```
 
-## Deployment
+## Levantar el proyecto
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Con Docker y NestJS en modo desarrollo:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+docker-compose up -d
+npm run start:dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Visualizar archivos en árbol
 
-## Resources
+Para ver la estructura del proyecto en árbol:
 
-Check out a few resources that may come in handy when working with NestJS:
+```bash
+tree "C:/ruta/de/acceso" /f
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## URLs y Endpoints
+Formularios
 
-## Support
+```bash
+| Método | URL         | Descripción                  |
+| ------ | ----------- | ---------------------------- |
+| GET    | `/forms`    | Listar todos los formularios |
+| POST   | `/forms`    | Crear un formulario          |
+| GET    | `/forms/id` | Obtener formulario por ID    |
+| DELETE | `/forms/id` | Eliminar formulario por ID   |
+| PATCH  | `/forms/id` | Actualizar formulario por ID |
+(no incluye modificaciones anidadas)
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+tomar en cuenta que solo hace actualizaciones basicas mas no entre relaciones:
 
-## Stay in touch
+```bash
+{
+  "name": "Registro de prueba 14V3",
+  "description": "Formulario para registrar DBA DE prueba, update 3",
+  "settings": {
+    "autoSave": true
+  }
+}
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## JSON DE PRUEBA PARA HACER POST
 
-## License
+```bash
+{
+  "id": "a1b2c3d4-e5f6-7g8h-9i0j-klmnopqrst12",
+  "code": "product_registration",
+  "name": "Registro de PRUEBA 6",
+  "description": "Formulario para registrar DBA DE PRUEBA",
+  "version": 1,
+  "settings": {
+    "audited": true,
+    "allowDraft": true,
+    "autoSave": true,
+    "submitLabel": "Registrar Producto",
+    "cancelLabel": "Cancelar",
+    "autoSaveInterval": 300000
+  },
+  "sections": [
+    {
+      "id": "s1-product-info",
+      "code": "product_info",
+      "title": "Información del Producto",
+      "description": "Detalles del producto a registrar",
+      "orderIndex": 1,
+      "isVisible": true,
+      "fields": [
+        {
+          "id": "field-product-001",
+          "code": "product_name",
+          "label": "Nombre del Producto",
+          "placeholder": "Ingrese el nombre del producto",
+          "fieldType": "text",
+          "dataType": "string",
+          "orderIndex": 1,
+          "isRequired": true,
+          "validationRules": {
+            "required": true,
+            "minLength": 3,
+            "maxLength": 100,
+            "errorMessage": "El nombre del producto es obligatorio (3-100 caracteres)"
+          },
+          "uiConfig": {
+            "icon": "shopping_basket"
+          }
+        },
+        {
+          "id": "field-product-002",
+          "code": "sku",
+          "label": "SKU",
+          "placeholder": "123456789",
+          "fieldType": "text",
+          "dataType": "string",
+          "orderIndex": 2,
+          "isRequired": true,
+          "validationRules": {
+            "required": true,
+            "pattern": "^[0-9A-Za-z-]+$",
+            "errorMessage": "El SKU debe ser alfanumérico"
+          },
+          "uiConfig": {
+            "icon": "barcode"
+          }
+        },
+        {
+          "id": "field-product-003",
+          "code": "product_category",
+          "label": "Categoría del Producto",
+          "placeholder": "Seleccione una categoría",
+          "fieldType": "select",
+          "dataType": "string",
+          "orderIndex": 3,
+          "isRequired": true,
+          "validationRules": {
+            "required": true,
+            "errorMessage": "Seleccione una categoría de producto"
+          },
+          "uiConfig": {
+            "icon": "category",
+            "options": [
+              { "value": "electronics", "label": "Electrónica" },
+              { "value": "furniture", "label": "Muebles" },
+              { "value": "clothing", "label": "Ropa" },
+              { "value": "food", "label": "Alimentos" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s2-price-stock",
+      "code": "price_and_stock",
+      "title": "Precio y Stock",
+      "description": "Información relacionada con el precio y la cantidad de stock del producto",
+      "orderIndex": 2,
+      "isVisible": true,
+      "fields": [
+        {
+          "id": "field-price-001",
+          "code": "product_price",
+          "label": "Precio del Producto",
+          "placeholder": "Ingrese el precio",
+          "fieldType": "number",
+          "dataType": "float",
+          "orderIndex": 1,
+          "isRequired": true,
+          "validationRules": {
+            "required": true,
+            "min": 0.01,
+            "errorMessage": "El precio debe ser mayor a 0"
+          },
+          "uiConfig": {
+            "icon": "attach_money"
+          }
+        },
+        {
+          "id": "field-stock-001",
+          "code": "product_stock",
+          "label": "Stock Disponible",
+          "placeholder": "Ingrese la cantidad disponible",
+          "fieldType": "number",
+          "dataType": "integer",
+          "orderIndex": 2,
+          "isRequired": true,
+          "validationRules": {
+            "required": true,
+            "min": 0,
+            "errorMessage": "La cantidad en stock no puede ser menor que 0"
+          },
+          "uiConfig": {
+            "icon": "store"
+          }
+        }
+      ]
+    },
+    {
+      "id": "s3-product-images",
+      "code": "product_images",
+      "title": "Imágenes del Producto",
+      "description": "Subir imágenes relacionadas con el producto",
+      "orderIndex": 3,
+      "isVisible": true,
+      "fields": [
+        {
+          "id": "field-images-001",
+          "code": "product_images",
+          "label": "Imágenes del Producto",
+          "fieldType": "file",
+          "dataType": "array",
+          "orderIndex": 1,
+          "isRequired": false,
+          "validationRules": {
+            "maxFiles": 5,
+            "maxSize": 5000000,
+            "errorMessage": "Puedes cargar hasta 5 imágenes de máximo 5MB cada una"
+          },
+          "uiConfig": {
+            "icon": "photo_camera"
+          }
+        }
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "rule-price-validation",
+      "name": "Validar precio de producto",
+      "ruleType": "validation",
+      "triggerEvent": "onChange",
+      "triggerFields": ["product_price"],
+      "action": {
+        "targetField": "product_price",
+        "action": "validatePriceRange"
+      },
+      "priority": 1
+    },
+    {
+      "id": "rule-stock-validation",
+      "name": "Validar stock disponible",
+      "ruleType": "validation",
+      "triggerEvent": "onChange",
+      "triggerFields": ["product_stock"],
+      "action": {
+        "targetField": "product_stock",
+        "action": "validateStockAvailability"
+      },
+      "priority": 2
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-11-05T09:15:00Z",
+    "updatedAt": "2025-11-05T09:15:00Z",
+    "minimumAppVersion": "1.0.0"
+  }
+}
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+

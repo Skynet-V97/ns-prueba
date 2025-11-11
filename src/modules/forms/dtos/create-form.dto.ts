@@ -8,7 +8,7 @@ import {
   IsObject,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { DeepPartial } from 'typeorm';
+import type { DeepPartial } from 'typeorm';
 import { User } from '../entities';
 
 class FormSettingsDto {
@@ -53,16 +53,14 @@ export class FormSectionDto {
   @IsString() code: string;
   @IsString() title: string;
   @IsOptional() @IsString() description?: string;
-  //@IsOptional() @IsNumber() orderIndex?: number;
   @IsNumber() orderIndex: number;
-  //@IsOptional() @IsBoolean() isVisible?: boolean;
   @IsBoolean() isVisible: boolean;
-  //@IsOptional() @IsNumber() columns?: number;
   @IsNumber() columns: number;
-  //@IsOptional() parentSection?: FormSectionDto;
-  parentSection: FormSectionDto;
-  @IsArray() subSections: FormSectionDto[];
-  @IsString() formVersion: string; // ID de la versión del formulario
+  
+  @IsOptional() @ValidateNested() @Type(() => FormSectionDto) parentSection?: FormSectionDto;
+  @IsArray() @ValidateNested({ each: true }) @Type(() => FormSectionDto) subSections: FormSectionDto[];
+
+  @IsString() formVersion: string;
 
   @IsOptional() @IsString() form?: string; // Agregar form aquí como ID
 
@@ -71,6 +69,7 @@ export class FormSectionDto {
   @Type(() => FormFieldDto)
   fields: FormFieldDto[];
 }
+
 
 class BusinessRuleDto {
   @IsString() id: string;
@@ -104,6 +103,7 @@ export class CreateFormDto {
   rules: BusinessRuleDto[];
 
   @IsOptional() @IsObject() metadata?: Record<string, any>;
-  tipo: string | undefined;
-  createdBy: DeepPartial<User> | undefined;
+  
+  @IsString() tipo: string; // Cambié el tipo de `tipo` a obligatorio string, porque no es opcional según el JSON que estás enviando
+  @ValidateNested() @Type(() => User) createdBy: DeepPartial<User>; // Asegúrate de que esta relación esté bien estructurada
 }
