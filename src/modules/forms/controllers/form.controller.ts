@@ -36,7 +36,7 @@ export class FormController {
   async findById(@Param('id') id: string) {
     const form = await this.formService.findById(id);
 
-    if (!form) {
+    if (!form || !form.isActive) {
       throw new NotFoundException(`Formulario con ID ${id} no encontrado`);
     }
 
@@ -51,13 +51,26 @@ export class FormController {
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() dto: UpdateFormDto) {
+    const form = await this.formService.findById(id);
+
+    if (!form || !form.isActive) {
+      throw new NotFoundException(`Formulario con ID ${id} no encontrado o está desactivado`);
+    }
+
+    // Si el formulario está activo, lo actualizamos
     return await this.formService.update(id, dto);
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
+    const form = await this.formService.findById(id);
+
+    if (!form || !form.isActive) {
+      throw new NotFoundException(`Formulario con ID ${id} no encontrado o ya está desactivado`);
+    }
+
+    // Si el formulario está activo, procedemos con la eliminación lógica
     await this.formService.remove(id);
     return { message: `Formulario con ID ${id} eliminado correctamente` };
   }
-
 }
